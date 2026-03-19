@@ -1,10 +1,6 @@
-/**
- * 2026 Workout Challenge — app.js
- */
-
 // ── CONFIG: paste your Supabase credentials here ──────────────────────────────
-const SUPABASE_URL  = 'https://bmiyqwgcbzutrbikbamr.supabase.co';      // e.g. https://xxxx.supabase.co
-const SUPABASE_ANON = 'sb_publishable_8pWb8k10Z9IQr4lnyOR_VA_ZeILEVKZ'; // found in Project Settings → API
+const SUPABASE_URL  = 'https://bmiyqwgcbzutrbikbamr.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_8pWb8k10Z9IQr4lnyOR_VA_ZeILEVKZ';
 
 const CHALLENGE_START = new Date('2026-04-01');
 const CHALLENGE_END   = new Date('2026-05-31');
@@ -27,7 +23,6 @@ let allEntries     = [];
 let displayedCount = 10;
 let editingId      = null;
 
-// ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -49,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ── Sanitize (XSS prevention) ─────────────────────────────────────────────────
 function sanitize(str) {
   if (typeof str !== 'string') return '';
   return str
@@ -60,7 +54,6 @@ function sanitize(str) {
     .replace(/'/g, '&#x27;');
 }
 
-// ── Join screen ───────────────────────────────────────────────────────────────
 function showJoin() {
   document.getElementById('screen-join').classList.add('active');
   document.getElementById('screen-app').classList.remove('active');
@@ -117,7 +110,6 @@ function handleSignOut() {
   showJoin();
 }
 
-// ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === tab)
@@ -129,7 +121,6 @@ function switchTab(tab) {
   if (tab === 'add')   resetAddForm();
 }
 
-// ── Load entries ──────────────────────────────────────────────────────────────
 async function loadLog() {
   try {
     const { data, error } = await supabase
@@ -147,7 +138,6 @@ async function loadLog() {
   }
 }
 
-// ── Render log ────────────────────────────────────────────────────────────────
 function renderLog() {
   const total    = allEntries.reduce((s, e) => s + e.duration_mins, 0);
   const sessions = allEntries.length;
@@ -224,7 +214,6 @@ function loadMoreEntries() {
   renderLog();
 }
 
-// ── Progress bar ──────────────────────────────────────────────────────────────
 function renderProgress() {
   const now     = new Date();
   const total   = CHALLENGE_END - CHALLENGE_START;
@@ -234,7 +223,6 @@ function renderProgress() {
   document.getElementById('prog-pct').textContent  = pct + '%';
 }
 
-// ── Add / Edit form ───────────────────────────────────────────────────────────
 function resetAddForm(entry = null) {
   editingId = entry ? entry.id : null;
 
@@ -353,7 +341,6 @@ async function handleAddWorkout() {
   }
 }
 
-// ── Delete ────────────────────────────────────────────────────────────────────
 function confirmDelete(id) {
   const entry = allEntries.find(e => e.id === id);
   if (!entry) return;
@@ -390,7 +377,6 @@ async function executeDelete() {
   }
 }
 
-// ── Leaderboard ───────────────────────────────────────────────────────────────
 async function loadLeaderboard() {
   document.getElementById('board-list').innerHTML = '<p class="empty-state">Loading…</p>';
   try {
@@ -408,13 +394,13 @@ async function loadLeaderboard() {
 
     const maxMins = data[0].total_mins || 1;
     document.getElementById('board-list').innerHTML = data.map((row, i) => {
-      const isYou         = row.name === currentUser.name;
-      const ci            = (row.color_index || 0) % AVATAR_COLORS.length;
-      const [bg, fg]      = AVATAR_COLORS[ci];
-      const initials      = row.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-      const barW          = Math.round((row.total_mins / maxMins) * 100);
-      const medal         = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
-      const rankClass     = i < 3 ? 'board-rank top' : 'board-rank';
+      const isYou      = row.name === currentUser.name;
+      const ci         = (row.color_index || 0) % AVATAR_COLORS.length;
+      const [bg, fg]   = AVATAR_COLORS[ci];
+      const initials   = row.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const barW       = Math.round((row.total_mins / maxMins) * 100);
+      const medal      = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+      const rankClass  = i < 3 ? 'board-rank top' : 'board-rank';
       return `
         <div class="board-row${isYou ? ' board-row-you' : ''}">
           <div class="${rankClass}">${medal}</div>
@@ -438,7 +424,6 @@ async function loadLeaderboard() {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function showError(el, msg) {
   el.textContent = msg;
   el.classList.add('visible');
