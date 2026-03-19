@@ -17,16 +17,37 @@
         <h1>2026 Workout Challenge</h1>
         <p class="subtitle">April 1 – May 31, 2026</p>
       </div>
-      <div class="card">
-        <h2>Join the challenge</h2>
-        <p class="helper">Enter your name and the team join code provided by your coordinator.</p>
+
+      <!-- MODE TOGGLE -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-btn-login" onclick="switchMode('login')">Returning member</button>
+        <button class="mode-btn" id="mode-btn-register" onclick="switchMode('register')">First time joining</button>
+      </div>
+
+      <!-- LOGIN CARD -->
+      <div class="card" id="login-card">
+        <h2>Welcome back!</h2>
+        <p class="helper">Enter your name and join code exactly as you did when you first joined.</p>
+        <label for="login-name">Your name</label>
+        <input id="login-name" type="text" placeholder="e.g. Jamie Smith" maxlength="40" autocomplete="off"/>
+        <label for="login-code">Team join code</label>
+        <input id="login-code" type="text" placeholder="e.g. GETBUFF2026" maxlength="20" autocomplete="off" style="text-transform:uppercase"/>
+        <div id="login-error" class="error-msg" aria-live="polite"></div>
+        <button id="login-btn" class="btn btn-primary" onclick="handleLogin()">Log in</button>
+      </div>
+
+      <!-- REGISTER CARD -->
+      <div class="card hidden" id="register-card">
+        <h2>Join the challenge!</h2>
+        <p class="helper">Enter your name and the team join code provided by your coordinator. You only do this once.</p>
         <label for="join-name">Your name</label>
         <input id="join-name" type="text" placeholder="e.g. Jamie Smith" maxlength="40" autocomplete="off"/>
         <label for="join-code">Team join code</label>
-        <input id="join-code" type="text" placeholder="e.g. CDI2026" maxlength="20" autocomplete="off" style="text-transform:uppercase"/>
+        <input id="join-code" type="text" placeholder="e.g. GETBUFF2026" maxlength="20" autocomplete="off" style="text-transform:uppercase"/>
         <div id="join-error" class="error-msg" aria-live="polite"></div>
         <button id="join-btn" class="btn btn-primary" onclick="handleJoin()">Join &amp; start logging</button>
       </div>
+
       <p class="footnote">Your progress is saved automatically each session.</p>
     </div>
   </div>
