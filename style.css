@@ -667,3 +667,33 @@ select {
 }
 
 .btn-danger:hover { opacity: 0.88; }
+/* ── Mode toggle ── */
+.mode-toggle {
+  display: flex;
+  width: 100%;
+  max-width: 420px;
+  background: var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  gap: 4px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-2);
+  transition: all 0.15s;
+}
+
+.mode-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
