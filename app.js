@@ -73,15 +73,27 @@ async function handleJoin() {
   btn.disabled = true;
   btn.textContent = 'Joining…';
 
-  try {
-    const { data, error } = await sbClient
+ try {
+    // First try to find existing participant
+    let { data, error } = await sbClient
       .from('participants')
-      .upsert(
-        { name: nameRaw, join_code: codeRaw },
-        { onConflict: 'name,join_code', ignoreDuplicates: false }
-      )
       .select('id, name, color_index')
-      .single();
+      .eq('name', nameRaw)
+      .eq('join_code', codeRaw)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    // If not found, create new participant
+    if (!data) {
+      const insert = await sbClient
+        .from('participants')
+        .insert({ name: nameRaw, join_code: codeRaw })
+        .select('id, name, color_index')
+        .single();
+      if (insert.error) throw insert.error;
+      data = insert.data;
+    }
 
     if (error) throw error;
     currentUser = data;
