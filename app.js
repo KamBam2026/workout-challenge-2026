@@ -1,4 +1,4 @@
-// ── CONFIG: paste your Supabase credentials here ──────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://bmiyqwgcbzutrbikbamr.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_8pWb8k10Z9IQr4lnyOR_VA_ZeILEVKZ';
 
@@ -17,14 +17,14 @@ const ACTIVITY_ICONS = {
   'Aerobics / cardio class':'🏋️','Basketball':'🏀','Soccer / kickball':'⚽',
 };
 
-let supabase       = null;
+let sbClient       = null;
 let currentUser    = null;
 let allEntries     = [];
 let displayedCount = 10;
 let editingId      = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
   const dateInput = document.getElementById('date-input');
   dateInput.value = new Date().toISOString().split('T')[0];
@@ -74,7 +74,7 @@ async function handleJoin() {
   btn.textContent = 'Joining…';
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sbClient
       .from('participants')
       .upsert(
         { name: nameRaw, join_code: codeRaw },
@@ -123,7 +123,7 @@ function switchTab(tab) {
 
 async function loadLog() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sbClient
       .from('entries')
       .select('*')
       .eq('participant_id', currentUser.id)
@@ -225,12 +225,10 @@ function renderProgress() {
 
 function resetAddForm(entry = null) {
   editingId = entry ? entry.id : null;
-
   document.getElementById('form-title').textContent = entry ? 'Edit workout' : 'Log a workout';
   document.getElementById('add-btn').textContent    = entry ? 'Save changes' : 'Save workout';
   document.getElementById('cancel-edit-btn').classList.toggle('hidden', !entry);
   document.getElementById('add-error').classList.remove('visible');
-
   document.getElementById('act-select').value  = entry ? entry.activity : '';
   document.getElementById('dur-input').value   = entry ? entry.duration_mins : '';
   document.getElementById('notes-input').value = entry ? (entry.notes || '') : '';
@@ -294,7 +292,7 @@ async function handleAddWorkout() {
 
   try {
     if (editingId) {
-      const { data, error } = await supabase
+      const { data, error } = await sbClient
         .from('entries')
         .update({
           activity:      finalActivity,
@@ -312,7 +310,7 @@ async function handleAddWorkout() {
       if (idx !== -1) allEntries[idx] = data;
       showToast('Workout updated!');
     } else {
-      const { data, error } = await supabase
+      const { data, error } = await sbClient
         .from('entries')
         .insert({
           participant_id: currentUser.id,
@@ -360,7 +358,7 @@ async function executeDelete() {
   closeDeleteModal();
   if (!id) return;
   try {
-    const { error } = await supabase
+    const { error } = await sbClient
       .from('entries')
       .delete()
       .eq('id', id)
@@ -380,7 +378,7 @@ async function executeDelete() {
 async function loadLeaderboard() {
   document.getElementById('board-list').innerHTML = '<p class="empty-state">Loading…</p>';
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sbClient
       .from('leaderboard_view')
       .select('name, total_mins, color_index')
       .order('total_mins', { ascending: false });
@@ -439,5 +437,4 @@ function showToast(msg) {
 function formatDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+  return new Date(y, m - 1, d)
