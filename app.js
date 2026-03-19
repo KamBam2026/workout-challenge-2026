@@ -54,11 +54,66 @@ function sanitize(str) {
     .replace(/'/g, '&#x27;');
 }
 
+// ── Mode toggle (login vs register) ──────────────────────────────────────────
+function switchMode(mode) {
+  const isLogin = mode === 'login';
+  document.getElementById('login-card').classList.toggle('hidden', !isLogin);
+  document.getElementById('register-card').classList.toggle('hidden', isLogin);
+  document.getElementById('mode-btn-login').classList.toggle('active', isLogin);
+  document.getElementById('mode-btn-register').classList.toggle('active', !isLogin);
+  document.getElementById('login-error').classList.remove('visible');
+  document.getElementById('join-error').classList.remove('visible');
+}
+
 function showJoin() {
   document.getElementById('screen-join').classList.add('active');
   document.getElementById('screen-app').classList.remove('active');
+  switchMode('login');
 }
 
+// ── Login — finds existing user only ─────────────────────────────────────────
+async function handleLogin() {
+  const nameRaw = document.getElementById('login-name').value.trim();
+  const codeRaw = document.getElementById('login-code').value.trim().toUpperCase();
+  const errEl   = document.getElementById('login-error');
+  errEl.classList.remove('visible');
+
+  if (!nameRaw || nameRaw.length < 2) return showError(errEl, 'Please enter your name.');
+  if (!codeRaw)                       return showError(errEl, 'Please enter the join code.');
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Logging in…';
+
+  try {
+    const { data, error } = await sbClient
+      .from('participants')
+      .select('id, name, color_index')
+      .eq('name', nameRaw)
+      .eq('join_code', codeRaw)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      showError(errEl, 'No account found with that name and join code. Check your spelling or switch to "First time joining".');
+      btn.disabled = false;
+      btn.textContent = 'Log in';
+      return;
+    }
+
+    currentUser = data;
+    sessionStorage.setItem('wc_user', JSON.stringify(currentUser));
+    showApp();
+  } catch (err) {
+    console.error(err);
+    showError(errEl, 'Something went wrong. Please try again.');
+    btn.disabled = false;
+    btn.textContent = 'Log in';
+  }
+}
+
+// ── Join — creates new user only, errors if name already exists ───────────────
 async function handleJoin() {
   const nameRaw = document.getElementById('join-name').value.trim();
   const codeRaw = document.getElementById('join-code').value.trim().toUpperCase();
@@ -73,29 +128,31 @@ async function handleJoin() {
   btn.disabled = true;
   btn.textContent = 'Joining…';
 
- try {
-    // First try to find existing participant
-    let { data, error } = await sbClient
+  try {
+    // Check if name already exists with this join code
+    const { data: existing } = await sbClient
       .from('participants')
-      .select('id, name, color_index')
+      .select('id')
       .eq('name', nameRaw)
       .eq('join_code', codeRaw)
       .maybeSingle();
 
-    if (error) throw error;
-
-    // If not found, create new participant
-    if (!data) {
-      const insert = await sbClient
-        .from('participants')
-        .insert({ name: nameRaw, join_code: codeRaw })
-        .select('id, name, color_index')
-        .single();
-      if (insert.error) throw insert.error;
-      data = insert.data;
+    if (existing) {
+      showError(errEl, 'An account with that name already exists. Switch to "Returning member" to log in instead.');
+      btn.disabled = false;
+      btn.textContent = 'Join & start logging';
+      return;
     }
 
+    // Create new participant
+    const { data, error } = await sbClient
+      .from('participants')
+      .insert({ name: nameRaw, join_code: codeRaw })
+      .select('id, name, color_index')
+      .single();
+
     if (error) throw error;
+
     currentUser = data;
     sessionStorage.setItem('wc_user', JSON.stringify(currentUser));
     showApp();
@@ -449,5 +506,5 @@ function showToast(msg) {
 function formatDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
-   return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
