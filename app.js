@@ -24,7 +24,9 @@ let displayedCount = 10;
 let editingId      = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession: false }
+});
 
   const dateInput = document.getElementById('date-input');
   dateInput.value = new Date().toISOString().split('T')[0];
