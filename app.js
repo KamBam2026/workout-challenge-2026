@@ -351,9 +351,6 @@ async function handleAddWorkout() {
   if (isNaN(new Date(dateRaw))) return showError(errEl, 'Invalid date.');
   if (notesRaw.length > 120)   return showError(errEl, 'Notes must be 120 characters or fewer.');
 
-  if (!editingId && allEntries.length >= 60)
-    return showError(errEl, 'Maximum of 60 workout entries reached.');
-
   const finalActivity = actRaw === 'Other' ? otherRaw : actRaw;
   const btn = document.getElementById('add-btn');
   btn.disabled = true;
